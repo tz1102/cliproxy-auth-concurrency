@@ -4,7 +4,7 @@
 
 一个支持 **CLIProxyAPI 原生插件 ABI** 的账号独立并发管理插件。**有管理界面，不用手动输入认证 ID，不用编辑 YAML 来调整每个账号的并发。**
 
-> **版本：v0.2.0（预览版）**。已通过本地 `go test -race`、Linux amd64 `c-shared` 编译、Go 插件 RPC 单元测试。**尚未在你的线上 CPA 版本上进行完整集成与真实并发压测**，首次部署务必先在测试 CPA 上验证。
+> **版本：v0.2.1（预览版）**。已通过本地 `go test -race`、Linux amd64 `c-shared` 编译、Go 插件 RPC 单元测试。**尚未在你的线上 CPA 版本上进行完整集成与真实并发压测**，首次部署务必先在测试 CPA 上验证。
 
 ## 功能
 
@@ -39,7 +39,7 @@ https://YOUR-CPA-HOST/v0/resource/plugins/auth-concurrency/status
 
 需要 CPA 二进制开启原生插件支持（检查管理 API 响应 `X-CPA-SUPPORT-PLUGIN: 1`），支持 RPC schema ≥ 2，且提供 `host.auth.list` 回调。
 
-从本仓库的 GitHub Actions 的 `auth-concurrency-linux-amd64` 构建产物下载 `auth-concurrency.so`，然后放到配置的插件目录。例如，当 CPA 工作目录包含 `plugins` 时：
+从 [GitHub Releases](https://github.com/tz1102/cliproxy-auth-concurrency/releases) 下载 `auth-concurrency_0.2.1_linux_amd64.zip` 并解压获得 `auth-concurrency.so`，然后放到配置的插件目录。例如，当 CPA 工作目录包含 `plugins` 时：
 
 ```bash
 mkdir -p plugins/linux/amd64
@@ -121,3 +121,27 @@ CGO_ENABLED=1 go build -buildmode=c-shared -o auth-concurrency.so ./cmd/cliproxy
 ## License
 
 MIT
+
+
+## 发布到 CPA 官方插件商店
+
+1. 在 [GitHub Releases](https://github.com/tz1102/cliproxy-auth-concurrency/releases/new) 发布版本标签 `v0.2.1`（选择 main）。
+2. 本仓库的 `.github/workflows/release.yml` 会自动构建并向 Release 上传 `auth-concurrency_0.2.1_linux_amd64.zip` 及 `checksums.txt`。确认两者上传成功后，再提交商店 PR。
+3. Fork [官方商店注册表](https://github.com/router-for-me/CLIProxyAPI-Plugins-Store)，仅修改 `registry.json` 的 `plugins` 数组，新增：
+
+```json
+{
+  "id": "auth-concurrency",
+  "name": "Auth Concurrency Guard",
+  "description": "Per-credential concurrency limits, live stats and browser management UI with hot reload.",
+  "author": "tz1102",
+  "repository": "https://github.com/tz1102/cliproxy-auth-concurrency",
+  "homepage": "https://github.com/tz1102/cliproxy-auth-concurrency",
+  "license": "MIT",
+  "tags": ["scheduler", "management", "concurrency"]
+}
+```
+
+4. 向官方 main 提交 PR，并提供 Release 标签、zip 资产与 checksums 证明。合并后才会在官方商店显示。注意发布之前先在测试 CPA 上进行端到端验证。
+
+CPA 商店安装还会在插件配置中注入嵌套的 `store` 元数据，v0.2.1 已允许此元数据，避免注册失败。
