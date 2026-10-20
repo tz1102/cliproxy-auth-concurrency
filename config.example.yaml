@@ -1,0 +1,13 @@
+# Merge this snippet into your existing CLIProxyAPI config.yaml.
+# Do not replace your full current config with this file.
+plugins:
+  enabled: true
+  dir: "plugins"
+  configs:
+    auth-concurrency:
+      enabled: true
+      priority: 100
+      default_limit: 0
+      strategy: round_robin
+      # Exact `id` from GET /v0/management/auth-files (NOT file name)
+      auth_limits_json: '{"replace-with-actual-auth-id":2}'

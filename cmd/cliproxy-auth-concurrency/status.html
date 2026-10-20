@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>认证账号并发管理 · CLIProxyAPI</title>
+<style>
+:root{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;color-scheme:dark;--bg:#090e1b;--panel:#121b2b;--panel2:#172339;--line:#2a394f;--ink:#e8effa;--muted:#91a2bc;--brand:#7ca7fa;--green:#64d5a6;--amber:#f4c37c;--red:#ff8992}
+*{box-sizing:border-box}body{background:var(--bg);color:var(--ink);margin:0;line-height:1.5}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}a{color:var(--brand)}.wrap{max-width:1050px;margin:0 auto;padding:34px 22px 80px}.eyebrow{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--brand);font-weight:700}.header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:8px 0 24px}.title{font-size:clamp(24px,4vw,34px);font-weight:750;letter-spacing:-.025em;margin:5px 0 6px}.muted{color:var(--muted)}.sub{margin:0;font-size:14px}.pill{font-size:12px;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:99px;padding:7px 12px;color:var(--muted);white-space:nowrap}.dot{width:7px;height:7px;background:var(--amber);border-radius:50%}.connected .dot{background:var(--green)}.grid{display:grid;gap:16px}.summary{grid-template-columns:repeat(3,1fr);margin:23px 0}.panel,.stat{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:22px;box-shadow:0 10px 30px #0002}.stat-label{font-size:13px;color:var(--muted)}.stat-value{font-size:30px;font-weight:760;margin:8px 0 2px}.stat-footer{font-size:12px;color:var(--muted)}.panel h2{font-size:17px;margin:0}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}.tag{border-radius:8px;padding:5px 9px;background:var(--panel2);font-size:12px;color:var(--muted)}.auth{display:grid;grid-template-columns:1fr auto;gap:12px;margin:12px 0 0}.two{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-top:16px}.field{display:flex;flex-direction:column;gap:8px}.field label{font-size:13px;font-weight:650;color:#c9d7ea}input,select{min-height:43px;width:100%;border:1px solid #40516a;border-radius:9px;background:#0c1627;color:var(--ink);padding:9px 12px;outline:none}input:focus,select:focus{border-color:var(--brand);box-shadow:0 0 0 3px #7ca7fa26}input::placeholder{color:#7789a6}.btn{border:1px solid #3d506d;border-radius:9px;min-height:43px;padding:9px 16px;background:var(--panel2);color:var(--ink);font-weight:650}.btn.primary{background:#3970ce;border-color:#5b8ee4;color:white}.btn:hover:not(:disabled){filter:brightness(1.13)}.actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:21px}.hint{font-size:12px;color:var(--muted);margin:10px 0 0}.notice{padding:11px 13px;font-size:13px;border-radius:9px;margin:15px 0 0;border:1px solid var(--line);color:var(--muted);background:var(--panel2);min-height:42px}.notice.ok{border-color:#256f58;color:#b1f5d7}.notice.err{border-color:#7b3942;color:#ffc1c6}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:640px;text-align:left;font-size:13px}th{color:var(--muted);font-size:12px;font-weight:650;padding:13px 12px;border-bottom:1px solid var(--line)}td{padding:15px 12px;border-bottom:1px solid #28364a}tbody tr:last-child td{border-bottom:none}.name{font-weight:650}.id{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);display:block;margin-top:3px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bar{width:92px;height:6px;background:#354258;border-radius:5px;overflow:hidden;margin-top:6px}.bar span{display:block;height:100%;background:var(--green)}.bar .full{background:var(--amber)}.tiny{font-size:11px;color:var(--muted)}.danger{color:var(--amber)}.footer{padding:14px 2px;color:var(--muted);font-size:12px}.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}@media(max-width:700px){.header{align-items:start}.summary{gap:9px}.stat{padding:15px}.stat-value{font-size:23px}.two{grid-template-columns:1fr}.wrap{padding:20px 14px 50px}.panel{padding:17px}.auth{grid-template-columns:1fr}.auth .btn{width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">CLIProxyAPI / NATIVE PLUGIN</div>
+  <div class="header"><div><h1 class="title">认证账号并发管理</h1><p class="sub muted">按账号独立限流 · 满载自动切换 · 保存后热更新，无需重启</p></div><div class="pill" id="connection"><span class="dot"></span><span id="connectionText">未连接</span></div></div>
+  <div class="grid summary">
+    <div class="stat"><div class="stat-label">认证账号</div><div id="total" class="stat-value">—</div><div class="stat-footer">可分配的凭据</div></div>
+    <div class="stat"><div class="stat-label">当前执行中</div><div id="active" class="stat-value">—</div><div class="stat-footer">所有认证账号累计</div></div>
+    <div class="stat"><div class="stat-label">满载跳过次数</div><div id="saturated" class="stat-value">—</div><div class="stat-footer">无可用账号时的选择次数</div></div>
+  </div>
+  <section class="panel">
+    <div class="panel-head"><h2>连接管理 API</h2><span class="tag">同源 · 密钥不存储</span></div>
+    <div class="auth"><div class="field"><label for="key">CPA Management Key</label><input id="key" type="password" autocomplete="off" placeholder="输入管理密钥以读取账号和修改配置"></div><button id="connect" class="btn primary">读取账号</button></div>
+    <p class="hint">管理密钥仅保存在当前页面内存，不写入 Cookie、LocalStorage 或服务器插件配置。请通过 HTTPS 或 SSH 隧道访问管理页面。</p>
+    <div id="message" class="notice" role="status" aria-live="polite">输入密钥并点击「读取账号」开始。</div>
+  </section>
+  <div class="two">
+    <section class="panel">
+      <div class="panel-head"><h2>设置单账号并发</h2><span class="tag">热更新</span></div>
+      <div class="field"><label for="account">选择认证账号</label><select id="account" disabled><option value="">请先读取账号…</option></select></div>
+      <div class="field" style="margin-top:18px"><label for="limit">最大同时请求数</label><input id="limit" type="number" inputmode="numeric" min="0" max="10000" step="1" value="2" disabled></div>
+      <p class="hint">设置 2 = 最多同时使用 2 个请求；0 = 不限制。调整为更低值不会中断正在执行的请求。</p>
+      <div class="actions"><button id="save" class="btn primary" disabled>保存并热更新</button><button id="reset" class="btn" disabled>恢复默认</button></div>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h2>当前生效策略</h2><span class="tag">运行时</span></div>
+      <div class="field"><label>未单独设置账号的默认上限</label><div id="defaultLimit" class="stat-value">—</div></div>
+      <div class="field" style="margin-top:15px"><label>账号分配策略</label><div id="strategy" style="font-size:18px;font-weight:650;padding:7px 0">—</div></div>
+      <p class="hint">账号满载后自动尝试其他可用认证账号。所有账号均满载时返回不可用，不会无限排队。</p>
+    </section>
+  </div>
+  <section class="panel" style="margin-top:16px">
+    <div class="panel-head"><h2>认证账号运行状态</h2><button id="refresh" class="btn" disabled>刷新</button></div>
+    <div class="table-wrap"><table><thead><tr><th>认证账号</th><th>来源</th><th>并发状态</th><th>限额</th><th>状态</th></tr></thead><tbody id="rows"><tr><td colspan="5" class="muted">连接后显示可用账号及实时占用</td></tr></tbody></table></div>
+    <p class="hint">数据来自 CPA <code>host.auth.list</code>；并发计数来自插件运行时。每 5 秒自动刷新。</p>
+  </section>
+  <div class="footer">v0.2.0 · 设置通过 CPA 原生配置 API 持久化，并等待 <code>plugin.reconfigure</code> 反映到运行状态。</div>
+</div>
+<script>
+(()=>{'use strict';
+  const $=id=>document.getElementById(id);
+  const path='/v0/management/plugins/auth-concurrency';
+  let snapshot=null,busy=false,timer=null;
+  const getKey=()=> $('key').value.trim();
+  function message(s,type=''){ $('message').textContent=s; $('message').className='notice '+type; }
+  function setConnected(value){ $('connection').classList.toggle('connected',value); $('connectionText').textContent=value?'已连接':'未连接'; ['account','limit','save','reset','refresh'].forEach(id=>$(id).disabled=!value); }
+  async function api(endpoint,options={}){
+    const key=getKey(); if(!key)throw Error('请先输入 Management Key');
+    const response=await fetch(endpoint,{cache:'no-store',...options,headers:{'X-Management-Key':key,...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})}});
+    const content=await response.text();let data;
+    try{data=JSON.parse(content)}catch{throw Error('CPA 返回非 JSON 内容 (HTTP '+response.status+')')}
+    if(!response.ok)throw Error(data.message||data.error||('HTTP '+response.status));
+    return data;
+  }
+  function displayName(a){return a.label||a.email||a.name||a.id}
+  function limitFor(id){return Object.prototype.hasOwnProperty.call(snapshot.auth_limits||{},id)?snapshot.auth_limits[id]:snapshot.default_limit}
+  function addCell(tr,txt,cls){const td=document.createElement('td');td.textContent=txt;if(cls)td.className=cls;tr.appendChild(td);return td}
+  function render(){if(!snapshot)return;
+    const accounts=Array.isArray(snapshot.accounts)?snapshot.accounts:[];
+    $('total').textContent=String(accounts.length); $('active').textContent=String(Object.values(snapshot.active_by_auth||{}).reduce((s,n)=>s+Number(n||0),0));
+    $('saturated').textContent=String(snapshot.saturated_picks||0);$('defaultLimit').textContent=snapshot.default_limit===0?'不限':String(snapshot.default_limit);
+    $('strategy').textContent=snapshot.strategy==='fill_first'?'优先填满':'轮询分配';
+    const previous=$('account').value;
+    $('account').replaceChildren();
+    if(!accounts.length){const op=document.createElement('option');op.value='';op.textContent='未找到可管理的认证账号';$('account').appendChild(op)}
+    accounts.forEach(a=>{const op=document.createElement('option');op.value=a.id;op.textContent=displayName(a)+' · '+(a.provider||'未识别')+' · '+a.id;$('account').appendChild(op)});
+    if(accounts.some(a=>a.id===previous))$('account').value=previous;
+    const selected=$('account').value;
+    if(selected && document.activeElement!==$('limit'))$('limit').value=String(limitFor(selected));
+    $('save').disabled=!selected || busy; $('reset').disabled=!selected || busy;
+    const rows=$('rows');rows.replaceChildren();
+    if(!accounts.length){const tr=document.createElement('tr');addCell(tr,'无账号，或此 CPA 版本未提供 host.auth.list');rows.appendChild(tr)}
+    for(const a of accounts){const tr=document.createElement('tr');
+      const name=addCell(tr,displayName(a),'name');const id=document.createElement('span');id.className='id';id.textContent=a.id;id.title=a.id;name.appendChild(id);
+      addCell(tr,a.provider||'—');
+      const current=Number((snapshot.active_by_auth||{})[a.id]||0);const limit=Number(limitFor(a.id));
+      const cell=addCell(tr,current+' / '+(limit===0?'∞':limit));
+      if(limit!==0){const bar=document.createElement('div');bar.className='bar';const fill=document.createElement('span');fill.style.width=Math.min(100,Math.round(current/limit*100))+'%';fill.className=current>=limit?'full':'';bar.appendChild(fill);cell.appendChild(bar)}
+      addCell(tr,limit===0?'不限':String(limit));addCell(tr,a.disabled?'已禁用':a.unavailable?'不可用':a.status||'可用',a.disabled||a.unavailable?'danger':'');rows.appendChild(tr)
+    }
+  }
+  async function refresh(silent=false){
+    if(busy)return;
+    try{const data=await api(path+'/status');snapshot=data;setConnected(true);render();
+      if(data.accounts_error)message('并发状态已连接，但读取账号失败：'+data.accounts_error,'err');
+      else if(!silent)message('已连接，载入 '+(data.accounts||[]).length+' 个认证账号。','ok');
+    }catch(e){if(!silent){setConnected(false);message('连接失败：'+e.message,'err')}}
+  }
+  $('connect').addEventListener('click',()=>refresh()); $('refresh').addEventListener('click',()=>refresh());
+  $('account').addEventListener('change',()=>{if(snapshot)$('limit').value=String(limitFor($('account').value))});
+  async function writeLimit(remove){
+    if(busy || !snapshot)return;
+    const id=$('account').value;
+    if(!id || !(snapshot.accounts||[]).some(a=>a.id===id))return message('请选择有效账号','err');
+    const num=Number($('limit').value);
+    if(!remove && (!Number.isSafeInteger(num)||num<0||num>10000||$('limit').value===''))return message('并发数必须是 0 到 10000 的整数','err');
+    busy=true;['save','reset','refresh','account','limit'].forEach(i=>$(i).disabled=true);
+    message('正在保存到 CPA 配置，并等待热更新生效…');
+    try{
+      // Read fresh persisted config before patching to avoid losing other account limits.
+      const config=await api(path+'/config');
+      let limits={};
+      if(typeof config.auth_limits_json==='string' && config.auth_limits_json.trim())limits=JSON.parse(config.auth_limits_json);
+      else if(config.auth_limits_json && typeof config.auth_limits_json==='object')limits=config.auth_limits_json;
+      if(!limits || Array.isArray(limits)||typeof limits!=='object')throw Error('现有 auth_limits_json 格式有误，请检查插件配置');
+      if(remove)delete limits[id];else limits[id]=num;
+      await api(path+'/config',{method:'PATCH',body:JSON.stringify({auth_limits_json:JSON.stringify(limits)})});
+      let applied=false;
+      for(let i=0;i<20;i++){
+        await new Promise(resolve=>setTimeout(resolve,400));
+        const current=await api(path+'/status');snapshot=current;
+        const actual=current.auth_limits||{};
+        if(remove?!Object.prototype.hasOwnProperty.call(actual,id):actual[id]===num){applied=true;break}
+      }
+      render();
+      if(applied)message('已保存并热更新生效：'+id+' → '+(remove?'恢复默认':num===0?'不限':num+' 并发')+'。','ok');
+      else message('CPA 已保存配置，但尚未观察到插件热更新。请查看服务日志或点击刷新核对。','err');
+    }catch(e){message('保存失败：'+e.message,'err')}
+    finally{busy=false;setConnected(!!snapshot);render()}
+  }
+  $('save').addEventListener('click',()=>writeLimit(false));$('reset').addEventListener('click',()=>writeLimit(true));
+  timer=setInterval(()=>{if(snapshot && !busy && getKey())refresh(true)},5000);
+  window.addEventListener('pagehide',()=>clearInterval(timer));
+})();
+</script>
+</body>
+</html>
