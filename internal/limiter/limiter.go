@@ -25,6 +25,11 @@ type Config struct {
 func ConfigYAML(raw []byte) (Config, error) {
 	cfg := Config{AuthLimits: map[string]int{}, Strategy: "round_robin"}
 	for _, line := range strings.Split(string(raw), "\n") {
+		// CPA plugin-store installs inject nested store metadata. Ignore nested keys;
+		// only top-level fields belong to this plugin configuration.
+		if strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t") {
+			continue
+		}
 		line = strings.TrimSpace(line)
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
@@ -63,7 +68,7 @@ func ConfigYAML(raw []byte) (Config, error) {
 			}
 		case "strategy":
 			cfg.Strategy = value
-		case "enabled", "priority": // fields managed by CPA
+		case "enabled", "priority", "store": // fields managed by CPA
 		default:
 			return cfg, fmt.Errorf("unknown plugin config field: %s", key)
 		}
