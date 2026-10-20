@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "plugins": [
+    {
+      "id": "auth-concurrency",
+      "name": "Auth Concurrency Guard",
+      "description": "Per-credential concurrency guard with account picker, live stats, and hot reload management UI.",
+      "author": "tz1102",
+      "repository": "https://github.com/tz1102/cliproxy-auth-concurrency",
+      "homepage": "https://github.com/tz1102/cliproxy-auth-concurrency",
+      "license": "MIT",
+      "tags": [
+        "scheduler",
+        "management",
+        "concurrency"
+      ]
+    }
+  ]
+}
