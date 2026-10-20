@@ -18,6 +18,22 @@ func TestConfig(t *testing.T) {
 		}
 	}
 }
+func TestStoreManagedMetadata(t *testing.T) {
+    c, err := ConfigYAML([]byte(`enabled: true
+priority: 100
+store:
+    id: auth-concurrency
+    version: 0.2.1
+    downloads:
+        - linux_amd64
+strategy: fill_first
+default_limit: 2
+auth_limits_json: '{"auth-a":1}'
+`))
+    if err != nil { t.Fatal(err) }
+    if c.DefaultLimit != 2 || c.AuthLimits["auth-a"] != 1 || c.Strategy != "fill_first" { t.Fatalf("invalid config: %+v", c) }
+}
+
 func TestLimitFallbackAndRelease(t *testing.T) {
 	s := New(Config{AuthLimits: map[string]int{"a": 2, "b": 1}, Strategy: "round_robin"})
 	c := []Candidate{{ID: "a"}, {ID: "b"}}
