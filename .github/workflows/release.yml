@@ -1,0 +1,41 @@
+name: Publish CLIProxyAPI store assets
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  linux-amd64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Validate version tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Expected vMAJOR.MINOR.PATCH tag'; exit 1; }
+      - name: Test and build Linux amd64
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CGO_ENABLED=1 GOOS=linux GOARCH=amd64
+          go test -race ./...
+          go build -trimpath -buildmode=c-shared -o auth-concurrency.so ./cmd/cliproxy-auth-concurrency
+          mkdir -p dist
+          version="${GITHUB_REF_NAME#v}"
+          zip -j "dist/auth-concurrency_${version}_linux_amd64.zip" auth-concurrency.so
+          (cd dist && sha256sum *.zip > checksums.txt)
+          unzip -l "dist/auth-concurrency_${version}_linux_amd64.zip"
+          cat dist/checksums.txt
+      - name: Upload assets to the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh release upload "$GITHUB_REF_NAME" dist/*.zip dist/checksums.txt --clobber
