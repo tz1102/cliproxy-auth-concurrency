@@ -128,7 +128,7 @@ type lifecycleRequest struct {
 func registration() any {
 	return map[string]any{
 		"schema_version": schemaVersion.Load(),
-		"metadata": map[string]any{"Name": pluginID, "Version": "0.2.0", "Author": "tz1102", "GitHubRepository": "https://github.com/tz1102/cliproxy-auth-concurrency", "ConfigFields": []any{
+		"metadata": map[string]any{"Name": pluginID, "Version": "0.2.1", "Author": "tz1102", "GitHubRepository": "https://github.com/tz1102/cliproxy-auth-concurrency", "ConfigFields": []any{
 			map[string]any{"Name": "auth_limits_json", "Type": "string", "Description": "JSON object: credential AUTH ID => maximum in-flight requests. Example: {\"auth-id\":2}; 0=unlimited"},
 			map[string]any{"Name": "default_limit", "Type": "integer", "Description": "Default concurrent requests per credential; 0=unlimited"},
 			map[string]any{"Name": "strategy", "Type": "enum", "EnumValues": []string{"round_robin", "fill_first"}, "Description": "Credential selection among non-saturated candidates"},
